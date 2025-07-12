@@ -1,11 +1,10 @@
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
-from api_key import *
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
@@ -25,6 +24,8 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 db = SQLAlchemy(app)
 
@@ -201,15 +202,18 @@ def protected(current_user):
 @app.route('/api/login/google', methods=['GET'])
 def google_login():
     try:
-        redirect_uri = url_for('google_authorize', _external=True)
+        redirect_uri = url_for('google_callback', _external=True)
+        print("Redirecting to Google for login...", redirect_uri)
         return google.authorize_redirect(redirect_uri)
     except Exception as e:
         logger.error(f"Google login error: {str(e)}")
         return jsonify({'error': 'Google login failed'}), 500
 
-@app.route('/api/authorize/google', methods=['GET'])
-def google_authorize():
+
+@app.route('/api/login/google/callback', methods=['GET'])
+def google_callback():
     try:
+        print("Google callback received")
         token = google.authorize_access_token()
         user_info = google.parse_id_token(token)
 
@@ -219,7 +223,6 @@ def google_authorize():
         if not email or not username:
             return jsonify({'error': 'Invalid Google user information'}), 400
 
-        # Check if user exists, if not create a new one
         user = User.query.filter_by(email=email).first()
         if not user:
             hashed_password = generate_password_hash('google_oauth', method='pbkdf2:sha256')
@@ -227,7 +230,6 @@ def google_authorize():
             db.session.add(user)
             db.session.commit()
 
-        # Generate JWT token
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.utcnow() + timedelta(hours=24)
@@ -238,7 +240,7 @@ def google_authorize():
             'message': 'Google login successful',
             'username': user.username,
             'token': token
-        }), 200    
+        }), 200
     except Exception as e:
         logger.error(f"Google authorization error: {str(e)}")
         return jsonify({'error': 'Google authorization failed'}), 500

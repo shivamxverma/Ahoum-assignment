@@ -166,7 +166,6 @@ Insert multiple facilitators and events for testing the system.
       }
     ]
   }
-  ```# 🧘 Booking System for Sessions & Retreats
 
 
 

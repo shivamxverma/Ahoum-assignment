@@ -1,29 +1,50 @@
-from flask import Flask
+from flask import Flask, session
 from flask_cors import CORS
+from flask_migrate import Migrate
 from config import Config
-from models import db
-from routes.user.route import auth_bp
+from models.model import db, User, Event, Session, Booking  # Import db and all models
+from routes.userRoute import auth_bp
 from authlib.integrations.flask_client import OAuth
+import logging
+import os
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)
+app.secret_key = app.config['SECRET_KEY']  # Required for session management
+
+# Restrict CORS for production
+CORS(app, resources={r"/api/*": {"origins": os.getenv('FRONTEND_URL', '*')}})
+
+# Initialize SQLAlchemy with the Flask app
 db.init_app(app)
+migrate = Migrate(app, db)
 
-app.register_blueprint(auth_bp)
-
+# Configure Google OAuth
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
     client_id=Config.GOOGLE_CLIENT_ID,
     client_secret=Config.GOOGLE_CLIENT_SECRET,
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'}
+    client_kwargs={
+        'scope': 'openid email profile',
+        'nonce': True
+    }
 )
 
 app.oauth = oauth
 app.google = google
 
+app.register_blueprint(auth_bp)
+
+# Create database tables
 with app.app_context():
     db.create_all()
 

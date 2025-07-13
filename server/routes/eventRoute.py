@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from models.event import Event
+from models.eventmodel import Event
 from models import db
 from datetime import datetime
 

@@ -10,5 +10,6 @@ class Event(db.Model):
     location = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
-    sessions = db.relationship('Session', backref='event', lazy=True)
+    sessions = db.relationship('Session', back_populates='event', lazy=True)
+    bookings = db.relationship('Booking', back_populates='event', lazy=True)
     

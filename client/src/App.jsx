@@ -1,17 +1,32 @@
 import React from "react";
+import {BrowserRouter,Routes,Route} from 'react-router-dom';
+import Dashboard from './pages/dashboard.jsx';
+import { AuthProvider } from './config/Auth.config.jsx';
+import ProtectedRoute from './config/ProtectedRoute.jsx';
+import Login from './pages/login.jsx';
+import SignupForm from './pages/signup.jsx'; 
 
 function App() {
-  const loginWithGoogle = () => {
-    window.location.href = "http://127.0.0.1:5000/api/login/google";
-  };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>Login with Google</h1>
-      <button onClick={loginWithGoogle}>
-        Login
-      </button>
-    </div>
+    <>
+      <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          /> 
+        </Routes>
+      </BrowserRouter>
+      </AuthProvider>
+    </>
   );
 }
 

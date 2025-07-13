@@ -9,6 +9,7 @@ class Booking(db.Model):
     session_id = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     status = db.Column(db.String(50), nullable=False, default='pending')
-    user = db.relationship('User', backref='bookings', lazy=True)
-    event = db.relationship('Event', backref='bookings', lazy=True)
-    session = db.relationship('Session', backref='bookings', lazy=True)
+    
+    user = db.relationship('User', back_populates='bookings', lazy=True)
+    event = db.relationship('Event', back_populates='bookings', lazy=True)
+    session = db.relationship('Session', back_populates='bookings', lazy=True)

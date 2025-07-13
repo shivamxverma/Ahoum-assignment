@@ -1,22 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/dashboard.jsx';
-import { AuthProvider } from './config/Auth.config.jsx';
+import { AuthProvider, AuthContext } from './config/Auth.config.jsx';
 import ProtectedRoute from './config/ProtectedRoute.jsx';
 import Login from './pages/login.jsx';
 import SignupForm from './pages/signup.jsx';
 import FacilitatorDashboard from './pages/facilitator-dashboard.jsx';
 
 function App() {
-  const [role, setRole] = useState(null);
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem('role');
-    setRole(storedRole || null); 
-  }, []);
-
-  console.log('User Role:', role);
-
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -27,7 +18,15 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                {role === 'User' ? <Dashboard /> : <FacilitatorDashboard />}
+                <AuthContext.Consumer>
+                  {({ role, isLoading }) =>
+                    isLoading ? (
+                      <div>Loading...</div>
+                    ) : (
+                      role === 'User' ? <Dashboard /> : <FacilitatorDashboard />
+                    )
+                  }
+                </AuthContext.Consumer>
               </ProtectedRoute>
             }
           />

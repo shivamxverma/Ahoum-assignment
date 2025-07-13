@@ -1,11 +1,15 @@
-from flask import Flask, session
+from flask import Flask, session,request,jsonify
+from flask_sqlalchemy import SQLAlchemy
+# from flask_session import Session
 from flask_cors import CORS
 from flask_migrate import Migrate
 from config import Config
-from models.model import db, User, Event, Session, Booking  # Import db and all models
+from models.model import db, User, Event, Session, Booking 
 from routes.userRoute import auth_bp
 from routes.eventRoute import event_bp
 from authlib.integrations.flask_client import OAuth
+import jwt
+from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 import os
 
@@ -21,7 +25,7 @@ app.config.from_object(Config)
 app.secret_key = app.config['SECRET_KEY']  # Required for session management
 
 # Restrict CORS for production
-CORS(app) 
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Initialize SQLAlchemy with the Flask app
 db.init_app(app)
@@ -43,8 +47,8 @@ google = oauth.register(
 app.oauth = oauth
 app.google = google
 
-app.register_blueprint(event_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(event_bp)
 
 
 # Create database tables

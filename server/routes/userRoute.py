@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, url_for, session
 from models.model import db, User
 from authlib.integrations.flask_client import OAuth
-from authlib.integrations.base_client.errors import OAuthError
 from datetime import datetime, timedelta
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -33,8 +32,8 @@ def token_required(f):
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    # print("Register endpoint hit")
-    # print("Request data:", request.get_json())
+    print("Register endpoint hit")
+    print("Request data:", request.get_json())
     data = request.get_json()
     print("Parsed data:", data)
     name = data.get('name')
@@ -42,7 +41,7 @@ def register():
     username = data.get('username')
     password = data.get('password')
 
-    # print(f"Name: {name}, Email: {email}, Username: {username}, Password: {password}")
+    print(f"Name: {name}, Email: {email}, Username: {username}, Password: {password}")
 
     if not all([email, username, password]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -82,7 +81,7 @@ def login():
         'exp': datetime.utcnow() + timedelta(hours=24)
     }, current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    return jsonify({'message': 'Login successful', 'token': token}), 200
+    return jsonify({'message': 'Login successful', 'token': token , 'userId': user.id}), 200
 
 @auth_bp.route('/login/google', methods=['GET'])
 def google_login():

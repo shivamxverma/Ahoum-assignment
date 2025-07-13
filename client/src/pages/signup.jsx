@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+// import { GOOGLE_CLIENT_ID } from '../config/Env.jsx';
 import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 function SignupForm() {
-  const [success , setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
   const [role, setRole] = useState('user');
   const [formData, setFormData] = useState({
@@ -29,34 +34,28 @@ function SignupForm() {
   };
 
   const handleSubmit = async (e) => {
-    try{
+    try {
       e.preventDefault();
-    if (passwordMatch) {
-      // console.log('Form submitted:', { ...formData, role });
-      // const userData = {
-      //   name: formData.name,
-      //   username: formData.username,
-      //   email: formData.email,
-      //   password: formData.password,
-      // };
-      const response = await axios.post('http://127.0.0.1:5000/api/register', { ...formData });
-      console.log('Signup successful:', response.data);
-      setSuccess(true);
-      setError(null);
-      setFormData({
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        phone: ''
-      });
-      setRole('user');
-      setShowPassword(false);
-      setPasswordMatch(true);
-    } else {
-      alert('Passwords do not match!');
-    }
+      if (passwordMatch) {
+        const response = await axios.post('http://127.0.0.1:5000/api/register', { ...formData });
+        console.log('Signup successful:', response.data);
+        setSuccess(true);
+        setError(null);
+        setFormData({
+          name: '',
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          phone: ''
+        });
+        setRole('user');
+        setShowPassword(false);
+        setPasswordMatch(true);
+        navigate('/login'); 
+      } else {
+        alert('Passwords do not match!');
+      }
     } catch (error) {
       console.error('Signup failed:', error.response?.data || error.message);
       alert('Signup failed. Please try again.');
@@ -80,7 +79,7 @@ function SignupForm() {
   };
 
   return (
-    <GoogleOAuthProvider clientId="609437176807-pjbeho8loabcussbnvi0i09cqd81c45e.apps.googleusercontent.com">
+    <>
       {success && (
         <div className="bg-green-100 text-green-800 p-4 rounded-md mb-4">
           Signup successful! Please check your email for verification.
@@ -111,18 +110,20 @@ function SignupForm() {
             </button>
           </div>
 
-          {/* Google Signup Button */}
-          <div className="mb-4">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              text="signup_with"
-              theme="outline"
-              width="100%"
-            />
-          </div>
+          {/* Google Signup Button - Only for User Role */}
+          {/* {role === 'user' && (
+            <div className="mb-4">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                text="signup_with"
+                theme="outline"
+                width="100%"
+              />
+            </div>
+          )} */}
 
-          <div className="text-center text-black mb-4">OR</div>
+          {/* {role === 'user' && <div className="text-center text-black mb-4">OR</div>} */}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -232,7 +233,7 @@ function SignupForm() {
           </form>
         </div>
       </div>
-    </GoogleOAuthProvider>
+      </>
   );
 }
 

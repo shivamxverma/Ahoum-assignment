@@ -37,7 +37,7 @@ function SignupForm() {
     try {
       e.preventDefault();
       if (passwordMatch) {
-        const response = await axios.post('http://127.0.0.1:5000/api/register', { ...formData });
+        const response = await axios.post('http://127.0.0.1:5000/api/register', { ...formData , role });
         console.log('Signup successful:', response.data);
         setSuccess(true);
         setError(null);

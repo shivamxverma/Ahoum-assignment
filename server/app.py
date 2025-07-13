@@ -7,6 +7,7 @@ from config import Config
 from models.model import db, User, Event, Session, Booking 
 from routes.userRoute import auth_bp
 from routes.eventRoute import event_bp
+from routes.sesssionRoute import session_bp
 from authlib.integrations.flask_client import OAuth
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -49,6 +50,7 @@ app.google = google
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(event_bp)
+app.register_blueprint(session_bp)
 
 
 # Create database tables

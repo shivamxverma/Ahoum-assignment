@@ -33,11 +33,16 @@ class Facilitator(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     phone = db.Column(db.String(20), nullable=True)
+    password = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     sessions = db.relationship('Session', back_populates='facilitator')
+
+    def check_password(self, password):
+        """Verify the provided password against the stored hash."""
+        return check_password_hash(self.password, password)
 
 # -------------------------------
 # Event Table

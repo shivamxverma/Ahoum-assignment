@@ -1,50 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Mock API for sessions with registered users
-const mockSessions = [
-    {
-        id: 1,
-        client: "John Doe",
-        date: "2025-07-15",
-        time: "10:00 AM",
-        status: "Confirmed",
-        registeredUsers: ["Alice Smith", "Bob Johnson"]
-    },
-    {
-        id: 2,
-        client: "Jane Smith",
-        date: "2025-07-16",
-        time: "2:00 PM",
-        status: "Pending",
-        registeredUsers: ["Charlie Brown"]
-    },
-    {
-        id: 3,
-        client: "Alex Brown",
-        date: "2025-07-17",
-        time: "11:00 AM",
-        status: "Confirmed",
-        registeredUsers: ["David Lee", "Emma Wilson"]
-    },
-];
-
 const FacilitatorDashboard = () => {
     const [sessions, setSessions] = useState([]);
     const [editingSession, setEditingSession] = useState(null);
     const [formData, setFormData] = useState({ client: "", date: "", time: "", status: "", registeredUsers: [] });
     const [showUsers, setShowUsers] = useState(null);
+    const [error, setError] = useState(null);
 
-    // Fetch sessions (mock API call)
-    useEffect(() => {
-        setSessions(mockSessions);
+    // Fetch sessions from Flask API
+    useEffect(async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:5000/api/sessions');
+            setSessions(response.data);
+        } catch (error) {
+            console.error('Error fetching sessions:', error);
+            setError('Failed to fetch sessions');
+        }
     }, []);
 
     // Handle cancel session
-    const cancelSession = (id) => {
-        setSessions(sessions.map(session =>
-            session.id === id ? { ...session, status: "Cancelled" } : session
-        ));
+    const cancelSession = async (id) => {
+        try {
+            await axios.put(`http://127.0.0.1:5000/api/sessions/${id}/cancel`);
+            setSessions(sessions.map(session =>
+                session.id === id ? { ...session, status: "Cancelled" } : session
+            ));
+        } catch (error) {
+            console.error('Error cancelling session:', error);
+            setError('Failed to cancel session');
+        }
     };
 
     // Handle edit session
@@ -65,12 +50,18 @@ const FacilitatorDashboard = () => {
     };
 
     // Handle update session
-    const updateSession = (id) => {
-        setSessions(sessions.map(session =>
-            session.id === id ? { ...session, ...formData } : session
-        ));
-        setEditingSession(null);
-        setFormData({ client: "", date: "", time: "", status: "", registeredUsers: [] });
+    const updateSession = async (id) => {
+        try {
+            await axios.put(`http://127.0.0.1:5000/api/sessions/${id}`, formData);
+            setSessions(sessions.map(session =>
+                session.id === id ? { ...session, ...formData } : session
+            ));
+            setEditingSession(null);
+            setFormData({ client: "", date: "", time: "", status: "", registeredUsers: [] });
+        } catch (error) {
+            console.error('Error updating session:', error);
+            setError('Failed to update session');
+        }
     };
 
     // Cancel editing
@@ -87,6 +78,7 @@ const FacilitatorDashboard = () => {
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <h1 className="text-3xl font-bold text-center mb-6">Facilitator Dashboard</h1>
+            {error && <div className="text-red-600 text-center mb-4">{error}</div>}
 
             {/* Sessions Table */}
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -208,6 +200,5 @@ const FacilitatorDashboard = () => {
         </div>
     );
 };
-
 
 export default FacilitatorDashboard;

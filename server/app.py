@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from config import Config
 from models.model import db, User, Event, Session, Booking  # Import db and all models
 from routes.userRoute import auth_bp
+from routes.eventRoute import event_bp
 from authlib.integrations.flask_client import OAuth
 import logging
 import os
@@ -42,7 +43,9 @@ google = oauth.register(
 app.oauth = oauth
 app.google = google
 
+app.register_blueprint(event_bp)
 app.register_blueprint(auth_bp)
+
 
 # Create database tables
 with app.app_context():

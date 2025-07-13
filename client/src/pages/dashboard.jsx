@@ -1,39 +1,24 @@
-import React, { useState } from 'react';
-
-const mockEvents = [
-  {
-    id: 1,
-    title: "Yoga Retreat",
-    description: "A relaxing yoga retreat in the mountains.",
-    date: "2025-08-01",
-    sessions: [
-      { id: 101, time: "2025-08-01T09:00:00", facilitator: { id: 1, name: "Alice Smith" } },
-      { id: 102, time: "2025-08-01T14:00:00", facilitator: { id: 2, name: "Bob Johnson" } },
-    ],
-  },
-  {
-    id: 2,
-    title: "Meditation Session",
-    description: "Guided meditation for mindfulness.",
-    date: "2025-07-10",
-    sessions: [
-      { id: 201, time: "2025-07-10T10:00:00", facilitator: { id: 3, name: "Clara Lee" } },
-    ],
-  },
-  {
-    id: 3,
-    title: "Mindfulness Workshop",
-    description: "Learn mindfulness techniques.",
-    date: "2025-07-20",
-    sessions: [
-      { id: 301, time: "2025-07-20T11:00:00", facilitator: { id: 1, name: "Alice Smith" } },
-    ],
-  },
-];
+import React, { useState ,useEffect} from 'react';
+import axios from 'axios';
 
 function Dashboard() {
-  const [events, setEvents] = useState(mockEvents);
+  const [Booking, setIsSessionBooked] = useState(false);
+  const [events, setEvents] = useState([]);
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:5000/api/events");
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   const currentDate = new Date("2025-07-13");
 
   const filteredEvents = events.filter(event => {
@@ -44,15 +29,17 @@ function Dashboard() {
     return true;
   });
 
+
+
   const handleBookSession = async (sessionId) => {
     try {
-      const response = await fetch("/api/event/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
+      const response = await axios.post(`http://127.0.0.1:5000/api/events/book`, {
+        userId: 2,
+        sessionId: sessionId,
       });
-      if (response.ok) {
+      if (response.status === 200) {
         alert("Session booked successfully!");
+        setIsSessionBooked(true);
       } else {
         alert("Failed to book session.");
       }
@@ -113,7 +100,7 @@ function Dashboard() {
                         className="ml-4 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                         onClick={() => handleBookSession(session.id)}
                       >
-                        Book Session
+                        {Booking ? "Booked" : "Book Session"}
                       </button>
                     )}
                   </li>

@@ -130,109 +130,109 @@ def login():
             'username': user.username
         }), 200
 
-@auth_bp.route('/login/google', methods=['GET'])
-def google_login():
-    try:
-        # Generate and store nonce
-        nonce = secrets.token_urlsafe(16)
-        session['nonce'] = nonce
-        redirect_uri = url_for('auth.google_callback', _external=True)
-        logger.info(f"Redirecting to Google for login: {redirect_uri}, nonce: {nonce}")
-        return current_app.google.authorize_redirect(redirect_uri, nonce=nonce)
-    except Exception as e:
-        logger.error(f"Google login initiation error: {str(e)}")
-        return jsonify({'error': 'Failed to initiate Google login'}), 500
+# @auth_bp.route('/login/google', methods=['GET'])
+# def google_login():
+#     try:
+#         # Generate and store nonce
+#         nonce = secrets.token_urlsafe(16)
+#         session['nonce'] = nonce
+#         redirect_uri = url_for('auth.google_callback', _external=True)
+#         logger.info(f"Redirecting to Google for login: {redirect_uri}, nonce: {nonce}")
+#         return current_app.google.authorize_redirect(redirect_uri, nonce=nonce)
+#     except Exception as e:
+#         logger.error(f"Google login initiation error: {str(e)}")
+#         return jsonify({'error': 'Failed to initiate Google login'}), 500
 
-@auth_bp.route('/login/google/callback', methods=['GET'])
-def google_callback():
-    try:
-        logger.info("Processing Google callback")
-        # Retrieve nonce from session
-        nonce = session.get('nonce')
-        if not nonce:
-            logger.error("Nonce missing in session")
-            return jsonify({'error': 'Session expired or invalid'}), 400
+# @auth_bp.route('/login/google/callback', methods=['GET'])
+# def google_callback():
+#     try:
+#         logger.info("Processing Google callback")
+#         # Retrieve nonce from session
+#         nonce = session.get('nonce')
+#         if not nonce:
+#             logger.error("Nonce missing in session")
+#             return jsonify({'error': 'Session expired or invalid'}), 400
 
-        # Authorize and validate token
-        token = current_app.google.authorize_access_token()
-        user_info = current_app.google.parse_id_token(token, nonce=nonce)
+#         # Authorize and validate token
+#         token = current_app.google.authorize_access_token()
+#         user_info = current_app.google.parse_id_token(token, nonce=nonce)
 
-        # Validate audience
-        if user_info.get('aud') != current_app.config['GOOGLE_CLIENT_ID']:
-            logger.error("Invalid audience in Google ID token")
-            return jsonify({'error': 'Invalid Google token audience'}), 400
+#         # Validate audience
+#         if user_info.get('aud') != current_app.config['GOOGLE_CLIENT_ID']:
+#             logger.error("Invalid audience in Google ID token")
+#             return jsonify({'error': 'Invalid Google token audience'}), 400
 
-        email = user_info.get('email')
-        username = user_info.get('name')
-        google_id = user_info.get('sub')
+#         email = user_info.get('email')
+#         username = user_info.get('name')
+#         google_id = user_info.get('sub')
 
-        if not all([email, username, google_id]):
-            logger.error("Missing required Google user information")
-            return jsonify({'error': 'Incomplete Google user information'}), 400
+#         if not all([email, username, google_id]):
+#             logger.error("Missing required Google user information")
+#             return jsonify({'error': 'Incomplete Google user information'}), 400
 
-        # Check for existing user or facilitator
-        user = User.query.filter_by(email=email).first()
-        facilitator = Facilitator.query.filter_by(email=email).first()
+#         # Check for existing user or facilitator
+#         user = User.query.filter_by(email=email).first()
+#         facilitator = Facilitator.query.filter_by(email=email).first()
 
-        if user:
-            if user.google_id != google_id:
-                user.google_id = google_id
-                db.session.commit()
-            token_data = {
-                'user_id': user.id,
-                'exp': datetime.utcnow() + timedelta(hours=24)
-            }
-            response = {
-                'message': 'Google login successful',
-                'username': user.username,
-                'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
-                'role': 'user'
-            }
-        elif facilitator:
-            if facilitator.google_id != google_id:
-                facilitator.google_id = google_id
-                db.session.commit()
-            token_data = {
-                'facilitator_id': facilitator.id,
-                'exp': datetime.utcnow() + timedelta(hours=24)
-            }
-            response = {
-                'message': 'Google login successful',
-                'name': facilitator.name,
-                'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
-                'role': 'facilitator'
-            }
-        else:
-            # Create new user (default to user role)
-            user = User(
-                email=email,
-                username=username,
-                google_id=google_id,
-                password=generate_password_hash(str(google_id), method='pbkdf2:sha256')
-            )
-            db.session.add(user)
-            db.session.commit()
-            token_data = {
-                'user_id': user.id,
-                'exp': datetime.utcnow() + timedelta(hours=24)
-            }
-            response = {
-                'message': 'Google login successful',
-                'username': user.username,
-                'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
-                'role': 'user'
-            }
+#         if user:
+#             if user.google_id != google_id:
+#                 user.google_id = google_id
+#                 db.session.commit()
+#             token_data = {
+#                 'user_id': user.id,
+#                 'exp': datetime.utcnow() + timedelta(hours=24)
+#             }
+#             response = {
+#                 'message': 'Google login successful',
+#                 'username': user.username,
+#                 'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
+#                 'role': 'user'
+#             }
+#         elif facilitator:
+#             if facilitator.google_id != google_id:
+#                 facilitator.google_id = google_id
+#                 db.session.commit()
+#             token_data = {
+#                 'facilitator_id': facilitator.id,
+#                 'exp': datetime.utcnow() + timedelta(hours=24)
+#             }
+#             response = {
+#                 'message': 'Google login successful',
+#                 'name': facilitator.name,
+#                 'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
+#                 'role': 'facilitator'
+#             }
+#         else:
+#             # Create new user (default to user role)
+#             user = User(
+#                 email=email,
+#                 username=username,
+#                 google_id=google_id,
+#                 password=generate_password_hash(str(google_id), method='pbkdf2:sha256')
+#             )
+#             db.session.add(user)
+#             db.session.commit()
+#             token_data = {
+#                 'user_id': user.id,
+#                 'exp': datetime.utcnow() + timedelta(hours=24)
+#             }
+#             response = {
+#                 'message': 'Google login successful',
+#                 'username': user.username,
+#                 'token': jwt.encode(token_data, current_app.config['SECRET_KEY'], algorithm='HS256'),
+#                 'role': 'user'
+#             }
 
-        # Clear nonce from session
-        session.pop('nonce', None)
-        logger.info(f"Google login successful for email: {email}")
-        return jsonify(response), 200
-    except OAuthError as e:
-        logger.error(f"Google OAuth error: {str(e)}")
-        return jsonify({'error': f'Google authorization failed: {str(e)}'}), 400
-    except Exception as e:
-        logger.error(f"Unexpected error during Google callback: {str(e)}")
-        return jsonify({'error': 'Unexpected error during Google authorization'}), 500
+#         # Clear nonce from session
+#         session.pop('nonce', None)
+#         logger.info(f"Google login successful for email: {email}")
+#         return jsonify(response), 200
+#     except OAuthError as e:
+#         logger.error(f"Google OAuth error: {str(e)}")
+#         return jsonify({'error': f'Google authorization failed: {str(e)}'}), 400
+#     except Exception as e:
+#         logger.error(f"Unexpected error during Google callback: {str(e)}")
+#         return jsonify({'error': 'Unexpected error during Google authorization'}), 500
 
 @auth_bp.route('/protected', methods=['GET'])
 @token_required

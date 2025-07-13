@@ -64,6 +64,7 @@ function SignupForm() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      console.log('Google signup successful:', credentialResponse);
       const response = await axios.post('http://127.0.0.1:5000/api/login/google', {
         access_token: credentialResponse.access_token,
         role
@@ -79,7 +80,7 @@ function SignupForm() {
   };
 
   return (
-    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+    <>
       {success && (
         <div className="bg-green-100 text-green-800 p-4 rounded-md mb-4">
           Signup successful! Please check your email for verification.
@@ -110,7 +111,7 @@ function SignupForm() {
             </button>
           </div>
 
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
@@ -120,7 +121,7 @@ function SignupForm() {
             />
           </div>
 
-          <div className="text-center text-black mb-4">OR</div>
+          <div className="text-center text-black mb-4">OR</div> */}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -230,7 +231,7 @@ function SignupForm() {
           </form>
         </div>
       </div>
-    </GoogleOAuthProvider>
+      </>
   );
 }
 

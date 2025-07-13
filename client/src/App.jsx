@@ -5,6 +5,7 @@ import { AuthProvider } from './config/Auth.config.jsx';
 import ProtectedRoute from './config/ProtectedRoute.jsx';
 import Login from './pages/login.jsx';
 import SignupForm from './pages/signup.jsx'; 
+import FacilitatorDashboard from './pages/facilitator-dashboard.jsx'
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/facilitator-dashboard" element={<FacilitatorDashboard />} />
           <Route
             path="/"
             element={

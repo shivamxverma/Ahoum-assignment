@@ -1,11 +1,9 @@
-import React from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-// import jwtDecode from 'jwt-decode'; 
 
 const Login = () => {
-  const navigate = useNavigate(); // Changed variable name to convention
+  const navigate = useNavigate();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
   const [role, setRole] = useState('User');
@@ -14,34 +12,26 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/api/login/${role}`, {
+      const response = await axios.post('http://127.0.0.1:5000/api/login', {
         username,
         password,
+        role
       });
 
       console.log('Login successful:', response.data);
       const userId = response.data.userId;
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userId', userId);
-
-      // Decode token to get user info
-      // const user = jwtDecode(response.data.token);
-      // console.log('User Info:', user);
       
       setSuccess(true);
       setError(null);
       localStorage.setItem('role', role);
       
-      // Store user info in localStorage
-      // localStorage.setItem('user', JSON.stringify(user));
-      
-      // Reset form fields
       setUsername('');
       setPassword('');
       
-      // Delay navigation slightly to show success message
       setTimeout(() => {
-        navigate('/'); // Changed to use navigate instead of navigator
+        navigate('/');
       }, 1000);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
@@ -51,7 +41,6 @@ const Login = () => {
     }
   };
 
-  // Handle form submission on Enter key
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleLogin();

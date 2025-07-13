@@ -8,9 +8,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedRole = localStorage.getItem('role');
-    const token = localStorage.getItem('token'); // Assuming you store a token
+    const token = localStorage.getItem('token');
+    console.log('Stored role:', storedRole);
+    console.log('Token:', token);
     setRole(storedRole || null);
-    setIsLoading(false); // Set loading to false after retrieving data
+    setIsLoading(false); 
   }, []);
 
   return (

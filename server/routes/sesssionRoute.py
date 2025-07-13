@@ -11,6 +11,7 @@ def get_sessions():
     print("Fetching all sessions")
     try:
         sessions = Session.query.all()
+        print(sessions)
         result = [
             {
                 'id': session.id,

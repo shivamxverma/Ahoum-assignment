@@ -33,10 +33,16 @@ def token_required(f):
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
+    # print("Register endpoint hit")
+    # print("Request data:", request.get_json())
     data = request.get_json()
+    print("Parsed data:", data)
+    name = data.get('name')
     email = data.get('email')
     username = data.get('username')
     password = data.get('password')
+
+    # print(f"Name: {name}, Email: {email}, Username: {username}, Password: {password}")
 
     if not all([email, username, password]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -47,6 +53,7 @@ def register():
         return jsonify({'error': 'Username already exists'}), 409
 
     user = User(
+        name=name,
         email=email,
         username=username,
         password=generate_password_hash(password, method='pbkdf2:sha256')

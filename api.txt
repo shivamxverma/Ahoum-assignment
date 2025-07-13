@@ -1,0 +1,5 @@
+User Api 
+
+POST Request
+http://localhost:5000/api/register  -> register user
+

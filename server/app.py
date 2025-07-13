@@ -20,7 +20,7 @@ app.config.from_object(Config)
 app.secret_key = app.config['SECRET_KEY']  # Required for session management
 
 # Restrict CORS for production
-CORS(app, resources={r"/api/*": {"origins": os.getenv('FRONTEND_URL', '*')}})
+CORS(app) 
 
 # Initialize SQLAlchemy with the Flask app
 db.init_app(app)

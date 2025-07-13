@@ -3,6 +3,8 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 function SignupForm() {
+  const [success , setSuccess] = useState(false);
+  const [error, setError] = useState(null);
   const [role, setRole] = useState('user');
   const [formData, setFormData] = useState({
     name: '',
@@ -26,14 +28,38 @@ function SignupForm() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    try{
+      e.preventDefault();
     if (passwordMatch) {
-      console.log('Form submitted:', { ...formData, role });
-      // Replace console.log with your backend API call, e.g.:
-      // axios.post('http://localhost:5000/api/signup', { ...formData, role });
+      // console.log('Form submitted:', { ...formData, role });
+      // const userData = {
+      //   name: formData.name,
+      //   username: formData.username,
+      //   email: formData.email,
+      //   password: formData.password,
+      // };
+      const response = await axios.post('http://127.0.0.1:5000/api/register', { ...formData });
+      console.log('Signup successful:', response.data);
+      setSuccess(true);
+      setError(null);
+      setFormData({
+        name: '',
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        phone: ''
+      });
+      setRole('user');
+      setShowPassword(false);
+      setPasswordMatch(true);
     } else {
       alert('Passwords do not match!');
+    }
+    } catch (error) {
+      console.error('Signup failed:', error.response?.data || error.message);
+      alert('Signup failed. Please try again.');
     }
   };
 
@@ -55,6 +81,16 @@ function SignupForm() {
 
   return (
     <GoogleOAuthProvider clientId="609437176807-pjbeho8loabcussbnvi0i09cqd81c45e.apps.googleusercontent.com">
+      {success && (
+        <div className="bg-green-100 text-green-800 p-4 rounded-md mb-4">
+          Signup successful! Please check your email for verification.
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 text-red-800 p-4 rounded-md mb-4">
+          {error}
+        </div>
+      )}
       <div className="min-h-screen w-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center text-black">Sign Up</h2>

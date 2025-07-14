@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
 from config import Config
-from models.model import db, User, Event, Session, Booking 
+from app import db
 from routes.userRoute import auth_bp
 from routes.eventRoute import event_bp
 from routes.sesssionRoute import session_bp

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from models.model import Event, Booking, Session, User
-from app import db  # Import db from the main app file
+from app import db
 from datetime import datetime
 import requests
 from requests.exceptions import RequestException

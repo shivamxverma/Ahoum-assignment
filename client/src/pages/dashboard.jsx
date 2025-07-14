@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:5000/api', 
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 function Dashboard() {
   const [bookings, setBookings] = useState([]);
   const [events, setEvents] = useState([]);

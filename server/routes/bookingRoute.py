@@ -1,27 +1,51 @@
 from flask import Blueprint, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from database import db
 from models.model import Booking, Session, Event, User
-# import jwt
 from datetime import datetime
-# from auth_middleware import token_required
 
 bookings_bp = Blueprint('bookings', __name__,url_prefix='/api/bookings')
+
+CORS(bookings_bp, resources={r"/*": {"origins": ["http://localhost:5173", "*"]}}) 
 
 @bookings_bp.route('/', methods=['GET'])
 def get_user_bookings():
     try:
         print("Fetching user bookings")
-        # user_id = request.args.get('userId')
-        # if not user_id or int(user_id) != current_user.id:
-        #     return jsonify({'message': 'Unauthorized access'}), 403
+        user_id = request.args.get('userId')
+        
+        if not user_id:
+            return jsonify({'message': 'userId is required'}), 400
+        
+        try:
+            user_id = int(user_id)  
+        except ValueError:
+            return jsonify({'message': 'userId must be a valid integer'}), 400
 
-        bookings = Booking.query.filter_by(user_id=2).all()
+        bookings = Booking.query.filter_by(user_id=user_id).all()
+        
+        if not bookings:
+            return jsonify({'message': 'No bookings found for this user'}), 404
+
         bookings_data = []
         for booking in bookings:
             session = Session.query.get(booking.session_id)
+            if not session:
+                print(f"Session {booking.session_id} not found for booking {booking.id}")
+                continue
+
             event = Event.query.get(session.event_id)
+            if not event:
+                print(f"Event {session.event_id} not found for session {session.id}")
+                continue
+
             facilitator = session.facilitator
+            facilitator_data = {
+                'id': facilitator.id,
+                'name': facilitator.name
+            } if facilitator else {'id': None, 'name': 'No facilitator'}
+
             bookings_data.append({
                 'id': booking.id,
                 'status': booking.status,
@@ -37,14 +61,13 @@ def get_user_bookings():
                     'id': session.id,
                     'name': session.name,
                     'time': session.start_time.isoformat(),
-                    'facilitator': {
-                        'id': facilitator.id,
-                        'name': facilitator.name
-                    }
+                    'facilitator': facilitator_data
                 }
             })
+
         return jsonify(bookings_data), 200
     except Exception as e:
+        print(f"Error fetching bookings: {str(e)}") 
         return jsonify({'message': f'Error fetching bookings: {str(e)}'}), 500
 
 # @bookings_bp.route('/events/book', methods=['POST'])

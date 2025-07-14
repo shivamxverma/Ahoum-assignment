@@ -1,10 +1,12 @@
 import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
   const [Booking, setIsSessionBooked] = useState(false);
   const [events, setEvents] = useState([]);
   const [filter, setFilter] = useState("all");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -49,8 +51,23 @@ function Dashboard() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    navigate('/login');
+  }
+
   return (
     <div className="container mx-auto p-4">
+      <div className="text-center mb-4">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
       <h1 className="text-3xl font-bold mb-4">Event Dashboard</h1>
       
       <div className="mb-4">

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FacilitatorDashboard = () => {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [editingSession, setEditingSession] = useState(null);
   const [formData, setFormData] = useState({ client: '', date: '', time: '', status: '' });
@@ -92,11 +94,33 @@ const FacilitatorDashboard = () => {
     setShowUsers(showUsers === id ? null : id);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    navigate('/login');
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-6">Facilitator Dashboard</h1>
       {error && <div className="text-red-600 text-center mb-4">{error}</div>}
-
+      <div className="text-center mb-4">
+        <button
+          onClick={fetchSessions}
+          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Refresh Sessions
+        </button>
+      </div>
+      <div className="text-center mb-4">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

@@ -3,6 +3,7 @@ from models.model import Event, Booking, Session, User
 from app import db  # Import db from the main app file
 from datetime import datetime
 import requests
+from requests.exceptions import RequestException
 
 event_bp = Blueprint('event', __name__, url_prefix='/api/events')
 
@@ -46,14 +47,22 @@ def get_event(event_id):
 
 @event_bp.route('/book', methods=['POST'])
 def book_session():
-    print("Booking a session")
-    print("Request data:", request.get_json())
+    current_app.logger.info("Booking a session")
     data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Missing JSON body'}), 400
+
     session_id = data.get('sessionId')
     user_id = data.get('userId')
 
     if not session_id or not user_id:
         return jsonify({'error': 'Session ID and User ID are required'}), 400
+
+    try:
+        session_id = int(session_id)
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Session ID and User ID must be integers'}), 400
 
     session = Session.query.get(session_id)
     if not session:
@@ -63,26 +72,27 @@ def book_session():
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    # Uncomment if you want to prevent duplicate bookings
-    # existing_booking = Booking.query.filter_by(user_id=user_id, session_id=session_id).first()
-    # if existing_booking:
-    #     return jsonify({'error': 'User already booked for this session'}), 400
+    existing_booking = Booking.query.filter_by(user_id=user_id, session_id=session_id).first()
+    if existing_booking:
+        return jsonify({'error': 'User already booked for this session'}), 400
 
-    # booking = Booking(
-    #     user_id=user_id,
-    #     session_id=session_id,
-    #     status="booked"
-    # )
-    
-    # print(f"Booking details: User ID: {user_id}, Session ID: {session_id}")
-    # db.session.add(booking)
-    # db.session.commit()
+    booking = Booking(
+        user_id=user_id,
+        session_id=session_id,
+        status="booked"
+    )
 
     try:
+        db.session.add(booking)
+        db.session.flush() 
+
+        notification_url = current_app.config.get('NOTIFICATION_URL', 'http://127.0.0.1:5001/notify')
+        secret_token = current_app.config.get('SECRET_TOKEN')
+
         response = requests.post(
-            'http://127.0.0.1:5001/notify',
+            notification_url,
             json={
-                'sessionId': session.id,
+                'session_id': session.id,  
                 'user': {
                     'id': user.id,
                     'name': user.name
@@ -90,12 +100,19 @@ def book_session():
                 'event': 'session_booked',
                 'facilitator_id': session.facilitator.id if session.facilitator else None
             },
-            # headers={
-            #     'Authorization': f'Bearer {current_app.config["SECRET_TOKEN"]}'
-            # }
+            headers={'Authorization': f'Bearer {secret_token}'}
         )
         response.raise_for_status()
-    except requests.RequestException as e:
-        current_app.logger.error(f"Notification failed: {str(e)}")
 
-    return jsonify({'message': 'Session booked successfully'}), 200
+        db.session.commit()
+        current_app.logger.info(f"Booking created and notification sent for user_id: {user_id}, session_id: {session_id}")
+        return jsonify({'message': 'Session booked successfully'}), 200
+
+    except RequestException as e:
+        db.session.rollback()
+        current_app.logger.error(f"Notification failed: {str(e)}")
+        return jsonify({'error': 'Failed to send notification'}), 500
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Booking failed: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500

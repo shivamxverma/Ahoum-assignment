@@ -23,15 +23,7 @@ function App() {
                     isLoading ? (
                       <div>Loading...</div>
                     ) : (
-                      <>
-                        {role === 'User' ? (
-                          <Dashboard />
-                        ) : role === 'Facilitator' ? (
-                          <FacilitatorDashboard />
-                        ) : (
-                          <div>Loading...</div>
-                        )}
-                      </>
+                      role === 'User' ? <Dashboard /> : <FacilitatorDashboard />
                     )
                   }
                 </AuthContext.Consumer>

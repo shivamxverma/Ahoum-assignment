@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,19 +35,19 @@ function Dashboard() {
 
   const handleBookSession = async (sessionId) => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/events/book', {
+      const response = await axios.post(`http://127.0.0.1:5000/api/events/book`, {
         userId: 2,
         sessionId: sessionId,
       });
       if (response.status === 200) {
-        alert('Session booked successfully!');
+        alert("Session booked successfully!");
         setIsSessionBooked(true);
       } else {
-        alert(`Failed to book session: ${response.data.error || 'Unknown error'}`);
+        alert("Failed to book session.");
       }
     } catch (error) {
-      console.error('Booking error:', error.response?.data?.error || error.message);
-      alert(`Error booking session: ${error.response?.data?.error || 'Network error'}`);
+      console.error("Booking error:", error);
+      alert("Error booking session.");
     }
   };
 
@@ -69,7 +69,7 @@ function Dashboard() {
         </button>
       </div>
       <h1 className="text-3xl font-bold mb-4">Event Dashboard</h1>
-
+      
       <div className="mb-4">
         <button
           className={`mr-2 px-4 py-2 rounded ${filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"}`}

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from models.model import Event, Booking, Session, User
 from datetime import datetime
-from extensions import db
+from database import db
 
 session_bp = Blueprint('session', __name__, url_prefix='/api/sessions')
 
